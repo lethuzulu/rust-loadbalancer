@@ -1,4 +1,4 @@
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, SocketAddr, TcpListener, TcpStream};
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -50,8 +50,10 @@ impl Server {
             let port = 5000 + id;
             let address = format!("127.0.0.1:{}", port);
             let listener = TcpListener::bind(&address).unwrap();
-
-            
+            println!("stream {:?}", stream);
+            let (st, add) = listener.accept().expect("Connection Failed");
+            println!("st {:?}", st);
+            println!("add {:?}", add);
         };
         let thread = thread::spawn(listener);
         Server { id, thread }
@@ -71,6 +73,13 @@ fn main() {
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         pool.execute(stream);
+
+        let addrs = [
+            SocketAddr::from(([127, 0, 0, 1], 5000)),
+            SocketAddr::from(([127, 0, 0, 1], 5001)),
+        ];
+        let cc = TcpStream::connect(&addrs[..]).expect("connection failed");
+        println!("cc  {:?}", cc)
     }
 }
 
